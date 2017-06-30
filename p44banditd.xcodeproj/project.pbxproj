@@ -37,7 +37,7 @@
 		ED5372D71DFC9FC90066FF5A /* sqlite3pp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED5372C91DFC9F650066FF5A /* sqlite3pp.cpp */; };
 		ED5372DA1DFCA0CC0066FF5A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = ED5372D91DFCA0CC0066FF5A /* libsqlite3.tbd */; };
 		ED5372DD1DFCA1FF0066FF5A /* ledchaincomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED5372DB1DFCA1FF0066FF5A /* ledchaincomm.cpp */; };
-		ED8D13B61F069992004045F4 /* p44bandit_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED9C9ABD1EF17AE300DBD4BC /* p44bandit_main.cpp */; };
+		ED8D13B61F069992004045F4 /* p44banditd_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED9C9ABD1EF17AE300DBD4BC /* p44banditd_main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -116,7 +116,7 @@
 		ED5372D91DFCA0CC0066FF5A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		ED5372DB1DFCA1FF0066FF5A /* ledchaincomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ledchaincomm.cpp; sourceTree = "<group>"; };
 		ED5372DC1DFCA1FF0066FF5A /* ledchaincomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ledchaincomm.hpp; sourceTree = "<group>"; };
-		ED9C9ABD1EF17AE300DBD4BC /* p44bandit_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = p44bandit_main.cpp; sourceTree = "<group>"; };
+		ED9C9ABD1EF17AE300DBD4BC /* p44banditd_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = p44banditd_main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,7 +151,7 @@
 		ED53725E1DFC28D00066FF5A /* src */ = {
 			isa = PBXGroup;
 			children = (
-				ED9C9ABD1EF17AE300DBD4BC /* p44bandit_main.cpp */,
+				ED9C9ABD1EF17AE300DBD4BC /* p44banditd_main.cpp */,
 				ED5372661DFC2C6D0066FF5A /* p44utils */,
 			);
 			path = src;
@@ -339,7 +339,7 @@
 				ED5372A91DFC2CBE0066FF5A /* logger.cpp in Sources */,
 				ED5372AF1DFC2CBE0066FF5A /* serialqueue.cpp in Sources */,
 				ED5372DD1DFCA1FF0066FF5A /* ledchaincomm.cpp in Sources */,
-				ED8D13B61F069992004045F4 /* p44bandit_main.cpp in Sources */,
+				ED8D13B61F069992004045F4 /* p44banditd_main.cpp in Sources */,
 				ED5372A31DFC2CBE0066FF5A /* i2c.cpp in Sources */,
 				ED5372A01DFC2CBE0066FF5A /* fdcomm.cpp in Sources */,
 				ED53729D1DFC2CBE0066FF5A /* consolekey.cpp in Sources */,
