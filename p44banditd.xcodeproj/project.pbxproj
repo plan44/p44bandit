@@ -7,10 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		ED23829E1E1190F500F1FE4F /* pixelpage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED23829B1E117BD000F1FE4F /* pixelpage.cpp */; };
-		ED2382A51E140D4A00F1FE4F /* textview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED2382A31E140D4A00F1FE4F /* textview.cpp */; };
-		ED43A9691ECB8B1B00FBC0FF /* life.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED43A9671ECB8B1B00FBC0FF /* life.cpp */; };
-		ED5372601DFC28D00066FF5A /* pixelboardd_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED53725F1DFC28D00066FF5A /* pixelboardd_main.cpp */; };
 		ED53729B1DFC2CBE0066FF5A /* application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED5372671DFC2CBE0066FF5A /* application.cpp */; };
 		ED53729C1DFC2CBE0066FF5A /* colorutils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED5372691DFC2CBE0066FF5A /* colorutils.cpp */; };
 		ED53729D1DFC2CBE0066FF5A /* consolekey.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED53726B1DFC2CBE0066FF5A /* consolekey.cpp */; };
@@ -41,8 +37,7 @@
 		ED5372D71DFC9FC90066FF5A /* sqlite3pp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED5372C91DFC9F650066FF5A /* sqlite3pp.cpp */; };
 		ED5372DA1DFCA0CC0066FF5A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = ED5372D91DFCA0CC0066FF5A /* libsqlite3.tbd */; };
 		ED5372DD1DFCA1FF0066FF5A /* ledchaincomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED5372DB1DFCA1FF0066FF5A /* ledchaincomm.cpp */; };
-		ED8E64661DFDC66F00B66723 /* blocks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8E64641DFDC66F00B66723 /* blocks.cpp */; };
-		EDA21EE11E0EC201009E276B /* display.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EDA21EE01E0EC201009E276B /* display.cpp */; };
+		ED8D13B61F069992004045F4 /* p44bandit_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED9C9ABD1EF17AE300DBD4BC /* p44bandit_main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,16 +53,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		ED23829B1E117BD000F1FE4F /* pixelpage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pixelpage.cpp; sourceTree = "<group>"; };
-		ED23829C1E117BD000F1FE4F /* pixelpage.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = pixelpage.hpp; sourceTree = "<group>"; };
-		ED2382A01E12B55E00F1FE4F /* torch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = torch.cpp; sourceTree = "<group>"; };
-		ED2382A11E12B55E00F1FE4F /* torch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = torch.hpp; sourceTree = "<group>"; };
-		ED2382A31E140D4A00F1FE4F /* textview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = textview.cpp; sourceTree = "<group>"; };
-		ED2382A41E140D4A00F1FE4F /* textview.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = textview.hpp; sourceTree = "<group>"; };
-		ED43A9671ECB8B1B00FBC0FF /* life.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = life.cpp; sourceTree = "<group>"; };
-		ED43A9681ECB8B1B00FBC0FF /* life.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = life.hpp; sourceTree = "<group>"; };
-		ED53725C1DFC28D00066FF5A /* pixelboardd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pixelboardd; sourceTree = BUILT_PRODUCTS_DIR; };
-		ED53725F1DFC28D00066FF5A /* pixelboardd_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pixelboardd_main.cpp; sourceTree = "<group>"; };
+		ED53725C1DFC28D00066FF5A /* p44banditd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = p44banditd; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED5372671DFC2CBE0066FF5A /* application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = application.cpp; sourceTree = "<group>"; };
 		ED5372681DFC2CBE0066FF5A /* application.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = application.hpp; sourceTree = "<group>"; };
 		ED5372691DFC2CBE0066FF5A /* colorutils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = colorutils.cpp; sourceTree = "<group>"; };
@@ -130,10 +116,7 @@
 		ED5372D91DFCA0CC0066FF5A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		ED5372DB1DFCA1FF0066FF5A /* ledchaincomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ledchaincomm.cpp; sourceTree = "<group>"; };
 		ED5372DC1DFCA1FF0066FF5A /* ledchaincomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ledchaincomm.hpp; sourceTree = "<group>"; };
-		ED8E64641DFDC66F00B66723 /* blocks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = blocks.cpp; sourceTree = "<group>"; };
-		ED8E64651DFDC66F00B66723 /* blocks.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = blocks.hpp; sourceTree = "<group>"; };
-		EDA21EDF1E0EC201009E276B /* display.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = display.hpp; sourceTree = "<group>"; };
-		EDA21EE01E0EC201009E276B /* display.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = display.cpp; sourceTree = "<group>"; };
+		ED9C9ABD1EF17AE300DBD4BC /* p44bandit_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = p44bandit_main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,24 +131,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		ED23829F1E12B4AF00F1FE4F /* Torch */ = {
-			isa = PBXGroup;
-			children = (
-				ED2382A01E12B55E00F1FE4F /* torch.cpp */,
-				ED2382A11E12B55E00F1FE4F /* torch.hpp */,
-			);
-			path = Torch;
-			sourceTree = "<group>";
-		};
-		ED43A9661ECB8B1B00FBC0FF /* Life */ = {
-			isa = PBXGroup;
-			children = (
-				ED43A9671ECB8B1B00FBC0FF /* life.cpp */,
-				ED43A9681ECB8B1B00FBC0FF /* life.hpp */,
-			);
-			path = Life;
-			sourceTree = "<group>";
-		};
 		ED5372531DFC28D00066FF5A = {
 			isa = PBXGroup;
 			children = (
@@ -178,7 +143,7 @@
 		ED53725D1DFC28D00066FF5A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				ED53725C1DFC28D00066FF5A /* pixelboardd */,
+				ED53725C1DFC28D00066FF5A /* p44banditd */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -186,16 +151,8 @@
 		ED53725E1DFC28D00066FF5A /* src */ = {
 			isa = PBXGroup;
 			children = (
+				ED9C9ABD1EF17AE300DBD4BC /* p44bandit_main.cpp */,
 				ED5372661DFC2C6D0066FF5A /* p44utils */,
-				ED43A9661ECB8B1B00FBC0FF /* Life */,
-				ED8E64631DFDC62A00B66723 /* Blocks */,
-				ED23829F1E12B4AF00F1FE4F /* Torch */,
-				ED8E64621DFDC61800B66723 /* Display */,
-				ED2382A31E140D4A00F1FE4F /* textview.cpp */,
-				ED2382A41E140D4A00F1FE4F /* textview.hpp */,
-				ED23829B1E117BD000F1FE4F /* pixelpage.cpp */,
-				ED23829C1E117BD000F1FE4F /* pixelpage.hpp */,
-				ED53725F1DFC28D00066FF5A /* pixelboardd_main.cpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -300,30 +257,12 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		ED8E64621DFDC61800B66723 /* Display */ = {
-			isa = PBXGroup;
-			children = (
-				EDA21EE01E0EC201009E276B /* display.cpp */,
-				EDA21EDF1E0EC201009E276B /* display.hpp */,
-			);
-			path = Display;
-			sourceTree = "<group>";
-		};
-		ED8E64631DFDC62A00B66723 /* Blocks */ = {
-			isa = PBXGroup;
-			children = (
-				ED8E64641DFDC66F00B66723 /* blocks.cpp */,
-				ED8E64651DFDC66F00B66723 /* blocks.hpp */,
-			);
-			path = Blocks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		ED53725B1DFC28D00066FF5A /* pixelboardd */ = {
+		ED53725B1DFC28D00066FF5A /* p44banditd */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = ED5372631DFC28D00066FF5A /* Build configuration list for PBXNativeTarget "pixelboardd" */;
+			buildConfigurationList = ED5372631DFC28D00066FF5A /* Build configuration list for PBXNativeTarget "p44banditd" */;
 			buildPhases = (
 				ED5372581DFC28D00066FF5A /* Sources */,
 				ED5372591DFC28D00066FF5A /* Frameworks */,
@@ -333,9 +272,9 @@
 			);
 			dependencies = (
 			);
-			name = pixelboardd;
+			name = p44banditd;
 			productName = pixelboardd;
-			productReference = ED53725C1DFC28D00066FF5A /* pixelboardd */;
+			productReference = ED53725C1DFC28D00066FF5A /* p44banditd */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -353,7 +292,7 @@
 					};
 				};
 			};
-			buildConfigurationList = ED5372571DFC28D00066FF5A /* Build configuration list for PBXProject "pixelboardd" */;
+			buildConfigurationList = ED5372571DFC28D00066FF5A /* Build configuration list for PBXProject "p44banditd" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -365,7 +304,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				ED53725B1DFC28D00066FF5A /* pixelboardd */,
+				ED53725B1DFC28D00066FF5A /* p44banditd */,
 			);
 		};
 /* End PBXProject section */
@@ -387,28 +326,23 @@
 				ED5372B21DFC2CBE0066FF5A /* sqlite3persistence.cpp in Sources */,
 				ED5372D51DFC9F720066FF5A /* mongoose.c in Sources */,
 				ED5372D61DFC9FC60066FF5A /* sqlite3ppext.cpp in Sources */,
-				ED8E64661DFDC66F00B66723 /* blocks.cpp in Sources */,
 				ED5372A61DFC2CBE0066FF5A /* jsonobject.cpp in Sources */,
-				ED5372601DFC28D00066FF5A /* pixelboardd_main.cpp in Sources */,
 				ED5372B01DFC2CBE0066FF5A /* socketcomm.cpp in Sources */,
 				ED5372A41DFC2CBE0066FF5A /* iopin.cpp in Sources */,
 				ED5372B11DFC2CBE0066FF5A /* spi.cpp in Sources */,
-				EDA21EE11E0EC201009E276B /* display.cpp in Sources */,
-				ED23829E1E1190F500F1FE4F /* pixelpage.cpp in Sources */,
 				ED5372AD1DFC2CBE0066FF5A /* persistentparams.cpp in Sources */,
 				ED5372A71DFC2CBE0066FF5A /* jsonrpccomm.cpp in Sources */,
 				ED5372A21DFC2CBE0066FF5A /* httpcomm.cpp in Sources */,
 				ED5372AA1DFC2CBE0066FF5A /* mainloop.cpp in Sources */,
 				ED5372A51DFC2CBE0066FF5A /* jsoncomm.cpp in Sources */,
-				ED2382A51E140D4A00F1FE4F /* textview.cpp in Sources */,
 				ED5372D71DFC9FC90066FF5A /* sqlite3pp.cpp in Sources */,
 				ED5372A91DFC2CBE0066FF5A /* logger.cpp in Sources */,
 				ED5372AF1DFC2CBE0066FF5A /* serialqueue.cpp in Sources */,
 				ED5372DD1DFCA1FF0066FF5A /* ledchaincomm.cpp in Sources */,
+				ED8D13B61F069992004045F4 /* p44bandit_main.cpp in Sources */,
 				ED5372A31DFC2CBE0066FF5A /* i2c.cpp in Sources */,
 				ED5372A01DFC2CBE0066FF5A /* fdcomm.cpp in Sources */,
 				ED53729D1DFC2CBE0066FF5A /* consolekey.cpp in Sources */,
-				ED43A9691ECB8B1B00FBC0FF /* life.cpp in Sources */,
 				ED53729E1DFC2CBE0066FF5A /* digitalio.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -544,7 +478,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		ED5372571DFC28D00066FF5A /* Build configuration list for PBXProject "pixelboardd" */ = {
+		ED5372571DFC28D00066FF5A /* Build configuration list for PBXProject "p44banditd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				ED5372611DFC28D00066FF5A /* Debug */,
@@ -553,7 +487,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		ED5372631DFC28D00066FF5A /* Build configuration list for PBXNativeTarget "pixelboardd" */ = {
+		ED5372631DFC28D00066FF5A /* Build configuration list for PBXNativeTarget "p44banditd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				ED5372641DFC28D00066FF5A /* Debug */,

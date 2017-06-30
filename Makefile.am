@@ -1,36 +1,32 @@
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
-bin_PROGRAMS = pixelboardd
+bin_PROGRAMS = p44banditd
 
-# pixelboardd
+# p44banditd
 
 if DEBUG
-pixelboardd_DEBUG = -D DEBUG=1
+p44banditd_DEBUG = -D DEBUG=1
 else
-pixelboardd_DEBUG =
+p44banditd_DEBUG =
 endif
 
 if P44_BUILD_OW
-pixelboardd_PLATFORM = -D P44_BUILD_OW=1
+p44banditd_PLATFORM = -D P44_BUILD_OW=1
 else
-pixelboardd_PLATFORM =
+p44banditd_PLATFORM =
 endif
 
 
 
-pixelboardd_LDADD = $(JSONC_LIBS) $(PTHREAD_LIBS) $(SQLITE3_LIBS) $(PNG_LIBS)
+p44banditd_LDADD = $(JSONC_LIBS) $(PTHREAD_LIBS) $(SQLITE3_LIBS) $(PNG_LIBS)
 
 
-pixelboardd_CXXFLAGS = \
+p44banditd_CXXFLAGS = \
   -I ${srcdir}/src/p44utils \
   -I ${srcdir}/src/p44utils/thirdparty/mongoose \
   -I ${srcdir}/src/p44utils/thirdparty \
   -I ${srcdir}/src \
-  -I ${srcdir}/src/Blocks \
-  -I ${srcdir}/src/Life \
-  -I ${srcdir}/src/Display \
-  -I ${srcdir}/src/Torch \
   -D DISABLE_I2C=0 \
   -D DISABLE_SPI=0 \
   ${BOOST_CPPFLAGS} \
@@ -38,10 +34,10 @@ pixelboardd_CXXFLAGS = \
   ${PTHREAD_CFLAGS} \
   ${SQLITE3_CFLAGS} \
   ${PNG_CFLAGS} \
-  ${pixelboardd_PLATFORM} \
-  ${pixelboardd_DEBUG}
+  ${p44banditd_PLATFORM} \
+  ${p44banditd_DEBUG}
 
-pixelboardd_SOURCES = \
+p44banditd_SOURCES = \
   src/p44utils/analogio.cpp \
   src/p44utils/analogio.hpp \
   src/p44utils/application.cpp \
@@ -114,16 +110,4 @@ pixelboardd_SOURCES = \
   src/p44utils/thirdparty/mongoose/mongoose.c \
   src/p44utils/thirdparty/mongoose/mongoose.h \
   src/p44utils/p44utils_common.hpp \
-  src/Blocks/blocks.cpp \
-  src/Blocks/blocks.hpp \
-  src/Life/life.cpp \
-  src/Life/life.hpp \
-  src/Display/display.cpp \
-  src/Display/display.hpp \
-  src/Torch/torch.cpp \
-  src/Torch/torch.hpp \
-  src/textview.cpp \
-  src/textview.hpp \
-  src/pixelpage.cpp \
-  src/pixelpage.hpp \
-  src/pixelboardd_main.cpp
+  src/p44banditd_main.cpp
