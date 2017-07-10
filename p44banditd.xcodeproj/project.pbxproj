@@ -38,6 +38,7 @@
 		ED5372DA1DFCA0CC0066FF5A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = ED5372D91DFCA0CC0066FF5A /* libsqlite3.tbd */; };
 		ED5372DD1DFCA1FF0066FF5A /* ledchaincomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED5372DB1DFCA1FF0066FF5A /* ledchaincomm.cpp */; };
 		ED8D13B61F069992004045F4 /* p44banditd_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED9C9ABD1EF17AE300DBD4BC /* p44banditd_main.cpp */; };
+		EDA3B14C1F137AE900B35CC8 /* banditcomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EDA3B14A1F137AE900B35CC8 /* banditcomm.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -117,6 +118,8 @@
 		ED5372DB1DFCA1FF0066FF5A /* ledchaincomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ledchaincomm.cpp; sourceTree = "<group>"; };
 		ED5372DC1DFCA1FF0066FF5A /* ledchaincomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ledchaincomm.hpp; sourceTree = "<group>"; };
 		ED9C9ABD1EF17AE300DBD4BC /* p44banditd_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = p44banditd_main.cpp; sourceTree = "<group>"; };
+		EDA3B14A1F137AE900B35CC8 /* banditcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = banditcomm.cpp; sourceTree = "<group>"; };
+		EDA3B14B1F137AE900B35CC8 /* banditcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = banditcomm.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,8 +154,10 @@
 		ED53725E1DFC28D00066FF5A /* src */ = {
 			isa = PBXGroup;
 			children = (
-				ED9C9ABD1EF17AE300DBD4BC /* p44banditd_main.cpp */,
 				ED5372661DFC2C6D0066FF5A /* p44utils */,
+				EDA3B14A1F137AE900B35CC8 /* banditcomm.cpp */,
+				EDA3B14B1F137AE900B35CC8 /* banditcomm.hpp */,
+				ED9C9ABD1EF17AE300DBD4BC /* p44banditd_main.cpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -336,6 +341,7 @@
 				ED5372AA1DFC2CBE0066FF5A /* mainloop.cpp in Sources */,
 				ED5372A51DFC2CBE0066FF5A /* jsoncomm.cpp in Sources */,
 				ED5372D71DFC9FC90066FF5A /* sqlite3pp.cpp in Sources */,
+				EDA3B14C1F137AE900B35CC8 /* banditcomm.cpp in Sources */,
 				ED5372A91DFC2CBE0066FF5A /* logger.cpp in Sources */,
 				ED5372AF1DFC2CBE0066FF5A /* serialqueue.cpp in Sources */,
 				ED5372DD1DFCA1FF0066FF5A /* ledchaincomm.cpp in Sources */,

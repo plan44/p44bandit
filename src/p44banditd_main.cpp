@@ -21,9 +21,9 @@
 
 #include "application.hpp"
 
-#include "digitalio.hpp"
-#include "i2c.hpp"
 #include "jsoncomm.hpp"
+
+#include "banditcomm.hpp"
 
 
 using namespace p44;
@@ -39,6 +39,7 @@ class P44BanditD : public CmdLineApp
 
   // API Server
   SocketCommPtr apiServer;
+  BanditCommPtr banditComm;
 
   MLMicroSeconds starttime;
 
@@ -59,6 +60,14 @@ public:
       { 'l', "loglevel",       true,  "level;set max level of log message detail to show on stdout" },
       { 0  , "errlevel",       true,  "level;set max level for log messages to go to stderr as well" },
       { 0  , "dontlogerrors",  false, "don't duplicate error messages (see --errlevel) on stdout" },
+      { 0  , "serialport",     true,  "serial port device; specify the serial port device" },
+      { 0  , "hsoutpin",       true,  "pin specification; serial handshake output line" },
+      { 0  , "hsinpin",        true,  "pin specification; serial handshake input line" },
+      { 0  , "receive",        false, "receive data from bandit and show it on stdout" },
+      { 0  , "startonhs",      false, "start only on input handshake becoming active" },
+      { 0  , "stoponhs",       false, "stop only on input handshake becoming inactive" },
+      { 0  , "hsonstart",      false, "set handshake line active already before sending or receiving" },
+      { 0  , "send",           true,  "file; send file to bandit" },
       { 'h', "help",           false, "show this text" },
       { 0, NULL } // list terminator
     };
@@ -82,7 +91,14 @@ public:
       getIntOption("errlevel", errlevel);
       SETERRLEVEL(errlevel, !getOption("dontlogerrors"));
 
-      // - start API server and wait for things to happen
+      // - create and start bandit comm
+      banditComm = BanditCommPtr(new BanditComm(MainLoop::currentMainLoop()));
+      string serialport;
+      if (getStringOption("serialport", serialport)) {
+        banditComm->setConnectionSpecification(serialport.c_str(), 2101, getOption("hsoutpin", "missing"), getOption("hsinpin", "missing"));
+      }
+
+      // - create and start API server and wait for things to happen
       string apiport;
       if (getStringOption("jsonapiport", apiport)) {
         apiServer = SocketCommPtr(new SocketComm(MainLoop::currentMainLoop()));
@@ -98,10 +114,110 @@ public:
   }
 
 
+//  bool string_load(FILE *aFile, string &aData)
+//  {
+//    const size_t bufLen = 1024;
+//    char buf[bufLen];
+//    aData.clear();
+//    bool eof = false;
+//    while (!eof) {
+//      char *p = fgets(buf, bufLen-1, aFile);
+//      if (!p) {
+//        // eof or error
+//        if (feof(aFile)) return !aData.empty(); // eof is ok if it occurs after having collected some data, otherwise it means: no more lines
+//        return false;
+//      }
+//      // something read
+//      size_t l = strlen(buf);
+//      // check for CR, LF or CRLF
+//      if (l>0 && buf[l-1]=='\n') {
+//        l--;
+//        eol = true;
+//      }
+//      if (l>0 && buf[l-1]=='\r') {
+//        l--;
+//        eol = true;
+//      }
+//      // collect
+//      aLine.append(buf,l);
+//    }
+//    return true;
+//  }
+
+
+
+//  string data =
+//    "N001&G99\n"
+//    "Z18.Y111.X-217.G92\n"
+//    "G98\n"
+//    "G91\n"
+//    "F80.\n"
+//    "X-4.\n"
+//    "I4.\n"
+//    "/G5\n"
+//    "N8\n";
+
 
   virtual void initialize()
   {
+    string fn;
+    if (getOption("receive")) {
+      banditComm->receive(
+        boost::bind(&P44BanditD::receiveResult, this, _1, _2),
+        getOption("hsonstart"),
+        getOption("startonhs"),
+        getOption("stoponhs")
+      );
+    }
+    else if (getStringOption("send", fn)) {
+      string data;
+      FILE *inFile = fopen(fn.c_str(), "r");
+      if (inFile && string_fgetfile(inFile, data)) {
+        banditComm->send(
+          boost::bind(&P44BanditD::sendComplete, this, _1),
+          data,
+          getOption("hsonstart")
+        );
+      }
+      else {
+        LOG(LOG_ERR, "Cannot open input file '%s'", fn.c_str());
+        terminateApp(1);
+      }
+    }
+    else {
+      LOG(LOG_NOTICE, "No daemon operation implemented yet");
+    }
   }
+
+
+  void sendComplete(ErrorPtr aError)
+  {
+    if (Error::isOK(aError)) {
+      // print data to stdout
+      LOG(LOG_NOTICE, "Successfully sent data");
+    }
+    else {
+      LOG(LOG_ERR, "Error receiving data: %s", aError->description().c_str());
+    }
+    terminateAppWith(aError);
+  }
+
+
+
+  void receiveResult(const string &aResponse, ErrorPtr aError)
+  {
+    if (Error::isOK(aError)) {
+      // print data to stdout
+      LOG(LOG_NOTICE, "Successfully received %zd bytes of data", aResponse.size());
+      fputs(aResponse.c_str(), stdout);
+      fflush(stdout);
+    }
+    else {
+      LOG(LOG_ERR, "Error receiving data: %s", aError->description().c_str());
+    }
+    terminateAppWith(aError);
+  }
+
 
 
   SocketCommPtr apiConnectionHandler(SocketCommPtr aServerSocketComm)

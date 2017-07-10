@@ -110,4 +110,6 @@ p44banditd_SOURCES = \
   src/p44utils/thirdparty/mongoose/mongoose.c \
   src/p44utils/thirdparty/mongoose/mongoose.h \
   src/p44utils/p44utils_common.hpp \
+  src/banditcomm.cpp \
+  src/banditcomm.hpp \
   src/p44banditd_main.cpp
