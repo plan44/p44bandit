@@ -68,6 +68,8 @@ namespace p44 {
     /// @param aDefaultPort default port number for TCP connection (irrelevant for direct serial device connection)
     void setConnectionSpecification(const char *aConnectionSpec, uint16_t aDefaultPort, const char *aRtsDtrOutput, const char *aCtsDsrDcdInput);
 
+    /// init to idle
+    void init();
 
     /// stop actions, no callback
     void stop();

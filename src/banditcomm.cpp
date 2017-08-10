@@ -67,6 +67,14 @@ void BanditComm::setConnectionSpecification(const char *aConnectionSpec, uint16_
 }
 
 
+void BanditComm::init()
+{
+  // for now: same as stop
+  stop();
+}
+
+
+
 void BanditComm::stop()
 {
   responseCB = NULL;

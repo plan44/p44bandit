@@ -3,7 +3,7 @@
 //
 //  Author: Lukas Zeller <luz@plan44.ch>
 //
-//  This file is part of pixelboardd.
+//  This file is part of p44banditd.
 //
 //  pixelboardd is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@ using namespace p44;
 #define DEFAULT_LOGLEVEL LOG_NOTICE
 
 
-/// Main program for plan44.ch P44-DSB-DEH in form of the "vdcd" daemon)
 class P44BanditD : public CmdLineApp
 {
   typedef CmdLineApp inherited;
@@ -160,6 +159,7 @@ public:
 
   virtual void initialize()
   {
+    banditComm->init(); // idle
     string fn;
     if (getOption("receive")) {
       banditComm->receive(
