@@ -124,7 +124,7 @@ void BanditComm::receiveHandler(ErrorPtr aError)
     if (banditState==banditstate_receiving) {
       // accumulate
       MainLoop::currentMainLoop().rescheduleExecutionTicket(timeoutTicket, RECEIVE_TIMEOUT);
-      LOG(LOG_INFO, "Received Data: %s", d.c_str());
+      LOG(LOG_DEBUG, "Received Data: %s", d.c_str());
       data.append(d);
     }
     else {

@@ -79,6 +79,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "--button sim.button --redled sim.redled --greenled sim.greenled"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "--receive"
             isEnabled = "NO">
          </CommandLineArgument>

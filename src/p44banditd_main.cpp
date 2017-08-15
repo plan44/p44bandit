@@ -43,7 +43,14 @@ class P44BanditD : public CmdLineApp
 
   // API Server
   SocketCommPtr apiServer;
+
+  // BANDIT communication
   BanditCommPtr banditComm;
+
+  // LED+Button
+  ButtonInputPtr button;
+  IndicatorOutputPtr greenLed;
+  IndicatorOutputPtr redLed;
 
   MLMicroSeconds starttime;
 
@@ -71,6 +78,9 @@ public:
       { 0  , "serialport",     true,  "serial port device; specify the serial port device" },
       { 0  , "hsoutpin",       true,  "pin specification; serial handshake output line" },
       { 0  , "hsinpin",        true,  "pin specification; serial handshake input line" },
+      { 0  , "button",         true,  "input pinspec; device button" },
+      { 0  , "greenled",       true,  "output pinspec; green device LED" },
+      { 0  , "redled",         true,  "output pinspec; red device LED" },
       { 0  , "datadir",        true,  "filepath;where to save machine data files" },
 
       // temp & experimental
@@ -101,6 +111,15 @@ public:
       int errlevel = LOG_ERR; // testing by default only reports to stdout
       getIntOption("errlevel", errlevel);
       SETERRLEVEL(errlevel, !getOption("dontlogerrors"));
+
+      // create button input
+      button = ButtonInputPtr(new ButtonInput(getOption("button","missing")));
+      button->setButtonHandler(boost::bind(&P44BanditD::buttonHandler, this, _1, _2, _3), true, Second);
+      // - create LEDs
+      greenLed = IndicatorOutputPtr(new IndicatorOutput(getOption("greenled","missing")));
+      redLed = IndicatorOutputPtr(new IndicatorOutput(getOption("redled","missing")));
+
+
 
       // - create and start bandit comm
       banditComm = BanditCommPtr(new BanditComm(MainLoop::currentMainLoop()));
@@ -217,7 +236,7 @@ public:
       LOG(LOG_NOTICE, "Successfully sent data");
     }
     else {
-      LOG(LOG_ERR, "Error receiving data: %s", aError->description().c_str());
+      LOG(LOG_ERR, "Error sending data: %s", aError->description().c_str());
     }
     terminateAppWith(aError);
   }
@@ -258,6 +277,7 @@ public:
       // print data to stdout
       size_t receivedBytes = aResponse.size();
       LOG(LOG_INFO, "Successfully received %zd bytes of data", receivedBytes);
+      redLed->onFor(2*Second);
       if (aResponse.size()>0) {
         string ts = string_ftime("%Y-%m-%d_%H.%M.%S", NULL);
         string fp = datadir;
@@ -282,6 +302,60 @@ public:
     }
     // restart receiving (with a small safety delay)
     MainLoop::currentMainLoop().executeOnce(boost::bind(&P44BanditD::autoReceive, this), 1*Second);
+  }
+
+
+  ErrorPtr sendFile(const string aFilePath)
+  {
+    ErrorPtr err;
+    string data;
+    FILE *inFile = fopen(aFilePath.c_str(), "r");
+    if (inFile==NULL || !string_fgetfile(inFile, data)) {
+      return SysError::errNo("cannot open file to send: ");
+    }
+    else {
+      // send it
+      redLed->steadyOn();
+      banditComm->send(
+        boost::bind(&P44BanditD::sendFileComplete, this, _1),
+        data,
+        true // hsonstart
+      );
+    }
+    return err;
+  }
+
+
+
+  void sendFileComplete(ErrorPtr aError)
+  {
+    redLed->steadyOff();
+    if (Error::isOK(aError)) {
+      // print data to stdout
+      LOG(LOG_NOTICE, "Successfully sent data");
+    }
+    else {
+      LOG(LOG_ERR, "Error sending data: %s", aError->description().c_str());
+    }
+  }
+
+
+
+  // MARK: ==== Button
+
+
+  void buttonHandler(bool aState, bool aHasChanged, MLMicroSeconds aTimeSincePreviousChange)
+  {
+    LOG(LOG_INFO, "Button state now %d%s", aState, aHasChanged ? " (changed)" : " (same)");
+    if (aHasChanged && !aState && selectedfile.size()>0) {
+      // send the selected file
+      string filepath = datadir;
+      pathstring_format_append(filepath, "%s", selectedfile.c_str());
+      ErrorPtr err = sendFile(filepath);
+      if (!Error::isOK(err)) {
+        LOG(LOG_ERR, "Cannot send file: %s", err->description().c_str());
+      }
+    }
   }
 
 
@@ -384,7 +458,7 @@ public:
         DIR *dirP = opendir (datadir.c_str());
         struct dirent *direntP;
         if (dirP==NULL) {
-          err = SysError::errNo("Cannot read data directory");
+          err = SysError::errNo("Cannot read data directory: ");
         }
         else {
           JsonObjectPtr files = JsonObject::newArray();
@@ -438,7 +512,7 @@ public:
                   string newpath = datadir;
                   pathstring_format_append(newpath, "%s", newname.c_str());
                   if (rename(filepath.c_str(), newpath.c_str())!=0) {
-                    err = SysError::errNo("Cannot rename file");
+                    err = SysError::errNo("Cannot rename file: ");
                   }
                 }
               }
@@ -448,7 +522,7 @@ public:
 //              }
             else if (action=="delete") {
               if (unlink(filepath.c_str())!=0) {
-                err = SysError::errNo("Cannot delete file");
+                err = SysError::errNo("Cannot delete file: ");
               }
             }
             else if (action=="select") {
@@ -458,6 +532,9 @@ public:
               else {
                 selectedfile = filename; // select
               }
+            }
+            else if (action=="send") {
+              err = sendFile(filepath);
             }
             else {
               err = WebError::webErr(400, "Unknown files action");
