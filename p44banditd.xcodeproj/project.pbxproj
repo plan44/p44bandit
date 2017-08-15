@@ -120,6 +120,7 @@
 		ED9C9ABD1EF17AE300DBD4BC /* p44banditd_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = p44banditd_main.cpp; sourceTree = "<group>"; };
 		EDA3B14A1F137AE900B35CC8 /* banditcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = banditcomm.cpp; sourceTree = "<group>"; };
 		EDA3B14B1F137AE900B35CC8 /* banditcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = banditcomm.hpp; sourceTree = "<group>"; };
+		EDBB9DAB1F435BD600765F95 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +138,7 @@
 		ED5372531DFC28D00066FF5A = {
 			isa = PBXGroup;
 			children = (
+				EDBB9DAB1F435BD600765F95 /* Makefile.am */,
 				ED53725E1DFC28D00066FF5A /* src */,
 				ED53725D1DFC28D00066FF5A /* Products */,
 				ED5372D81DFCA0CB0066FF5A /* Frameworks */,

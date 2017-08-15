@@ -25,12 +25,17 @@
 
 #include "banditcomm.hpp"
 
+#include <dirent.h>
 
 using namespace p44;
 
 #define MAINLOOP_CYCLE_TIME_uS 10000 // 10mS
 #define DEFAULT_LOGLEVEL LOG_NOTICE
 
+
+// MARK: ==== Application
+
+typedef boost::function<void (JsonObjectPtr aResponse, ErrorPtr aError)> RequestDoneCB;
 
 class P44BanditD : public CmdLineApp
 {
@@ -41,6 +46,10 @@ class P44BanditD : public CmdLineApp
   BanditCommPtr banditComm;
 
   MLMicroSeconds starttime;
+
+  // data dir
+  string datadir;
+  string selectedfile;
 
 public:
 
@@ -62,6 +71,9 @@ public:
       { 0  , "serialport",     true,  "serial port device; specify the serial port device" },
       { 0  , "hsoutpin",       true,  "pin specification; serial handshake output line" },
       { 0  , "hsinpin",        true,  "pin specification; serial handshake input line" },
+      { 0  , "datadir",        true,  "filepath;where to save machine data files" },
+
+      // temp & experimental
       { 0  , "receive",        false, "receive data from bandit and show it on stdout" },
       { 0  , "startonhs",      false, "start only on input handshake becoming active" },
       { 0  , "stoponhs",       false, "stop only on input handshake becoming inactive" },
@@ -95,6 +107,12 @@ public:
       string serialport;
       if (getStringOption("serialport", serialport)) {
         banditComm->setConnectionSpecification(serialport.c_str(), 2101, getOption("hsoutpin", "missing"), getOption("hsinpin", "missing"));
+      }
+
+      // - find the data directory
+      datadir = "/tmp/data";
+      if (getStringOption("datadir", datadir)) {
+        pathstring_format_append(datadir, "");
       }
 
       // - create and start API server and wait for things to happen
@@ -185,7 +203,9 @@ public:
       }
     }
     else {
-      LOG(LOG_NOTICE, "No daemon operation implemented yet");
+      // Normal operation:
+      LOG(LOG_NOTICE, "Start receiving automatically when handshake line indicates data");
+      autoReceive();
     }
   }
 
@@ -219,6 +239,56 @@ public:
   }
 
 
+  // MARK: ==== Normal operation
+  void autoReceive()
+  {
+    LOG(LOG_INFO, "Start waiting for new data...");
+    banditComm->receive(
+      boost::bind(&P44BanditD::autoReceived, this, _1, _2),
+      true, // hsonstart
+      true, // startonhs
+      true // stoponhs
+    );
+  }
+
+
+  void autoReceived(const string &aResponse, ErrorPtr aError)
+  {
+    if (Error::isOK(aError)) {
+      // print data to stdout
+      size_t receivedBytes = aResponse.size();
+      LOG(LOG_INFO, "Successfully received %zd bytes of data", receivedBytes);
+      if (aResponse.size()>0) {
+        string ts = string_ftime("%Y-%m-%d_%H.%M.%S", NULL);
+        string fp = datadir;
+        pathstring_format_append(fp, "%s_bandit_transmit", ts.c_str());
+        LOG(LOG_NOTICE, "Saving received data (%zd bytes) to '%s'", receivedBytes, fp.c_str());
+        FILE *datafileP = fopen(fp.c_str(), "w");
+        if (datafileP==NULL) {
+
+        }
+        else {
+          // save data
+          if (fwrite(aResponse.c_str(), 1, receivedBytes, datafileP)<receivedBytes) {
+            LOG(LOG_ERR, "Cannot save received file %s - %s", fp.c_str(), strerror(errno));
+          }
+          // close file
+          fclose(datafileP);
+        }
+      }
+    }
+    else {
+      LOG(LOG_ERR, "Error auto-receiving data: %s", aError->description().c_str());
+    }
+    // restart receiving (with a small safety delay)
+    MainLoop::currentMainLoop().executeOnce(boost::bind(&P44BanditD::autoReceive, this), 1*Second);
+  }
+
+
+
+
+  // MARK: ==== API access
+
 
   SocketCommPtr apiConnectionHandler(SocketCommPtr aServerSocketComm)
   {
@@ -241,34 +311,34 @@ public:
         string uri;
         o = aRequest->get("uri");
         if (o) uri = o->stringValue();
-//        JsonObjectPtr data;
-//        bool upload = false;
-//        bool action = (method!="GET");
-//        // check for uploads
-//        string uploadedfile;
-//        if (aRequest->get("uploadedfile", o)) {
-//          uploadedfile = o->stringValue();
-//          upload = true;
-//          action = false; // other params are in the URI, not the POSTed upload
-//        }
-//        if (action) {
-//          // JSON data is in the request
-//          data = aRequest->get("data");
-//        }
-//        else {
-//          // URI params is the JSON to process
-//          data = aRequest->get("uri_params");
-//          if (data) action = true; // GET, but with query_params: treat like PUT/POST with data
-//          if (upload) {
-//            // move that into the request
-//            data->add("uploadedfile", JsonObject::newString(uploadedfile));
-//          }
-//        }
-//        // request elements now: uri and data
-//        if (processRequest(uri, data, action, boost::bind(&PixelBoardD::requestHandled, this, aConnection, _1, _2))) {
-//          // done, callback will send response and close connection
-//          return;
-//        }
+        JsonObjectPtr data;
+        bool upload = false;
+        bool action = (method!="GET");
+        // check for uploads
+        string uploadedfile;
+        if (aRequest->get("uploadedfile", o)) {
+          uploadedfile = o->stringValue();
+          upload = true;
+          action = false; // other params are in the URI, not the POSTed upload
+        }
+        if (action) {
+          // JSON data is in the request
+          data = aRequest->get("data");
+        }
+        else {
+          // URI params is the JSON to process
+          data = aRequest->get("uri_params");
+          if (data) action = true; // GET, but with query_params: treat like PUT/POST with data
+          if (upload) {
+            // move that into the request
+            data->add("uploadedfile", JsonObject::newString(uploadedfile));
+          }
+        }
+        // request elements now: uri and data
+        if (processRequest(uri, data, action, boost::bind(&P44BanditD::requestHandled, this, aConnection, _1, _2))) {
+          // done, callback will send response and close connection
+          return;
+        }
         // request cannot be processed, return error
         LOG(LOG_ERR,"Invalid JSON request");
         aError = WebError::webErr(404, "No handler found for request to %s", uri.c_str());
@@ -297,11 +367,118 @@ public:
   }
 
 
-//  bool processRequest(string aUri, JsonObjectPtr aData, bool aIsAction, RequestDoneCB aRequestDoneCB)
-//  {
-//    ErrorPtr err;
-//    JsonObjectPtr o;
-//    if (aUri=="player1" || aUri=="player2") {
+  bool processRequest(string aUri, JsonObjectPtr aData, bool aIsAction, RequestDoneCB aRequestDoneCB)
+  {
+    ErrorPtr err;
+    JsonObjectPtr o;
+    if (aUri=="files") {
+      // return a list of files
+      string action;
+      if (!aData->get("action", o)) {
+        aIsAction = false;
+      }
+      else {
+        action = o->stringValue();
+      }
+      if (!aIsAction) {
+        DIR *dirP = opendir (datadir.c_str());
+        struct dirent *direntP;
+        if (dirP==NULL) {
+          err = SysError::errNo("Cannot read data directory");
+        }
+        else {
+          JsonObjectPtr files = JsonObject::newArray();
+          bool foundSelected = false;
+          while ((direntP = readdir(dirP))!=NULL) {
+            string fn = direntP->d_name;
+            if (fn=="." || fn=="..") continue;
+            JsonObjectPtr file = JsonObject::newObj();
+            file->add("name", JsonObject::newString(fn));
+            file->add("ino", JsonObject::newInt64(direntP->d_ino));
+            file->add("type", JsonObject::newInt64(direntP->d_type));
+            if (fn==selectedfile) foundSelected = true;
+            file->add("selected", JsonObject::newBool(fn==selectedfile));
+            files->arrayAppend(file);
+          }
+          closedir (dirP);
+          if (!foundSelected) selectedfile.clear(); // remove selection not matching any of the existing files
+          aRequestDoneCB(files, ErrorPtr());
+          return true;
+        }
+      }
+      else {
+        // a file action
+        if (!aData->get("name", o)) {
+          err = WebError::webErr(400, "Missing 'name'");
+        }
+        else {
+          // addressing a particular file
+          // - try to open to see if it exists
+          string filename = o->c_strValue();
+          string filepath = datadir;
+          pathstring_format_append(filepath, "%s", filename.c_str());
+          FILE *fileP = fopen(filepath.c_str(),"r");
+          if (fileP==NULL) {
+            err = WebError::webErr(404, "File '%s' not found", filename.c_str());
+          }
+          else {
+            // exists
+            fclose(fileP);
+            if (action=="rename") {
+              // rename file
+              if (!aData->get("newname", o)) {
+                err = WebError::webErr(400, "Missing 'newname'");
+              }
+              else {
+                string newname = o->stringValue();
+                if (newname.size()<3) {
+                  err = WebError::webErr(415, "'newname' is too short (min 3 characters)");
+                }
+                else {
+                  string newpath = datadir;
+                  pathstring_format_append(newpath, "%s", newname.c_str());
+                  if (rename(filepath.c_str(), newpath.c_str())!=0) {
+                    err = SysError::errNo("Cannot rename file");
+                  }
+                }
+              }
+            }
+//              else if (action=="download") {
+//
+//              }
+            else if (action=="delete") {
+              if (unlink(filepath.c_str())!=0) {
+                err = SysError::errNo("Cannot delete file");
+              }
+            }
+            else if (action=="select") {
+              if (selectedfile==filename) {
+                selectedfile.clear(); // unselect
+              }
+              else {
+                selectedfile = filename; // select
+              }
+            }
+            else {
+              err = WebError::webErr(400, "Unknown files action");
+            }
+          }
+        }
+      }
+      actionStatus(aRequestDoneCB, err);
+      return true;
+    }
+    else if (aIsAction && aUri=="log") {
+      if (aData->get("level", o)) {
+        int lvl = o->int32Value();
+        LOG(LOG_NOTICE, "\n====== Changed Log Level from %d to %d\n", LOGLEVEL, lvl);
+        SETLOGLEVEL(lvl);
+      }
+      actionStatus(aRequestDoneCB, err);
+      return true;
+    }
+
+//    else if (aUri=="player1" || aUri=="player2") {
 //      int side = aUri=="player2" ? 1 : 0;
 //      if (aIsAction) {
 //        if (aData->get("key", o)) {
@@ -342,13 +519,13 @@ public:
 //        }
 //      }
 //    }
-//    else if (aUri=="/") {
-//      string uploadedfile;
-//      string cmd;
-//      if (aData->get("uploadedfile", o))
-//        uploadedfile = o->stringValue();
-//      if (aData->get("cmd", o))
-//        cmd = o->stringValue();
+    else if (aUri=="/") {
+      string uploadedfile;
+      string cmd;
+      if (aData->get("uploadedfile", o))
+        uploadedfile = o->stringValue();
+      if (aData->get("cmd", o))
+        cmd = o->stringValue();
 //      if (cmd=="imageupload" && displayPage) {
 //        ErrorPtr err = displayPage->loadPNGBackground(uploadedfile);
 //        gotoPage("display", false);
@@ -356,30 +533,44 @@ public:
 //        aRequestDoneCB(JsonObjectPtr(), err);
 //        return true;
 //      }
-//    }
-//    return false;
-//  }
-//
-//
-//  ErrorPtr processUpload(string aUri, JsonObjectPtr aData, const string aUploadedFile)
-//  {
-//    ErrorPtr err;
-//
-//    string cmd;
-//    JsonObjectPtr o;
-//    if (aData->get("cmd", o)) {
-//      cmd = o->stringValue();
+    }
+    return false;
+  }
+
+
+  void actionDone(RequestDoneCB aRequestDoneCB)
+  {
+    aRequestDoneCB(JsonObjectPtr(), ErrorPtr());
+  }
+
+
+  void actionStatus(RequestDoneCB aRequestDoneCB, ErrorPtr aError = ErrorPtr())
+  {
+    aRequestDoneCB(JsonObjectPtr(), aError);
+  }
+  
+
+
+  ErrorPtr processUpload(string aUri, JsonObjectPtr aData, const string aUploadedFile)
+  {
+    ErrorPtr err;
+
+    string cmd;
+    JsonObjectPtr o;
+    if (aData->get("cmd", o)) {
+      cmd = o->stringValue();
 //      if (cmd=="imageupload") {
 //        displayPage->loadPNGBackground(aUploadedFile);
 //        gotoPage("display", false);
 //        updateDisplay();
 //      }
-//      else {
-//        err = WebError::webErr(500, "Unknown upload cmd '%s'", cmd.c_str());
-//      }
-//    }
-//    return err;
-//  }
+//      else
+      {
+        err = WebError::webErr(500, "Unknown upload cmd '%s'", cmd.c_str());
+      }
+    }
+    return err;
+  }
 
 
 
