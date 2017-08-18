@@ -75,6 +75,7 @@ public:
       { 'l', "loglevel",       true,  "level;set max level of log message detail to show on stdout" },
       { 0  , "errlevel",       true,  "level;set max level for log messages to go to stderr as well" },
       { 0  , "dontlogerrors",  false, "don't duplicate error messages (see --errlevel) on stdout" },
+      { 0  , "deltatstamps",  false, "show timestamp delta between log lines" },
       { 0  , "serialport",     true,  "serial port device; specify the serial port device" },
       { 0  , "hsoutpin",       true,  "pin specification; serial handshake output line" },
       { 0  , "hsinpin",        true,  "pin specification; serial handshake input line" },
@@ -111,6 +112,7 @@ public:
       int errlevel = LOG_ERR; // testing by default only reports to stdout
       getIntOption("errlevel", errlevel);
       SETERRLEVEL(errlevel, !getOption("dontlogerrors"));
+      SETDELTATIME(getOption("deltatstamps"));
 
       // create button input
       button = ButtonInputPtr(new ButtonInput(getOption("button","missing")));
@@ -662,8 +664,6 @@ int main(int argc, char **argv)
   // prevent debug output before application.main scans command line
   SETLOGLEVEL(LOG_EMERG);
   SETERRLEVEL(LOG_EMERG, false); // messages, if any, go to stderr
-  // create the mainloop
-  MainLoop::currentMainLoop().setLoopCycleTime(MAINLOOP_CYCLE_TIME_uS);
   // create app with current mainloop
   static P44BanditD application;
   // pass control
