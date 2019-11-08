@@ -19,7 +19,7 @@ endif
 
 
 
-p44banditd_LDADD = $(JSONC_LIBS) $(PTHREAD_LIBS) $(SQLITE3_LIBS) $(PNG_LIBS)
+p44banditd_LDADD = $(JSONC_LIBS) $(PTHREAD_LIBS) $(SQLITE3_LIBS)
 
 
 p44banditd_CXXFLAGS = \
@@ -34,7 +34,6 @@ p44banditd_CXXFLAGS = \
   ${JSONC_CFLAGS} \
   ${PTHREAD_CFLAGS} \
   ${SQLITE3_CFLAGS} \
-  ${PNG_CFLAGS} \
   ${p44banditd_PLATFORM} \
   ${p44banditd_DEBUG}
 

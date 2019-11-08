@@ -46,11 +46,6 @@ PKG_CHECK_MODULES([SQLITE3], [sqlite3], [], [
   AC_MSG_ERROR([$SQLITE3_PKG_ERRORS])
 ])
 
-PKG_CHECK_MODULES([PNG], [libpng], [], [
-  AC_MSG_ERROR([$PNG_PKG_ERRORS])
-])
-
-
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h inttypes.h limits.h netdb.h netinet/in.h stddef.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h unistd.h sys/resource.h], [], [AC_MSG_ERROR([required system header not found])])
 
