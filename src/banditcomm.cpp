@@ -34,8 +34,7 @@ using namespace p44;
 BanditComm::BanditComm(MainLoop &aMainLoop) :
 	inherited(aMainLoop),
   banditState(banditstate_idle),
-  endOnHandshake(false),
-  timeoutTicket(0)
+  endOnHandshake(false)
 {
 }
 
@@ -79,7 +78,7 @@ void BanditComm::stop()
 {
   responseCB = NULL;
   banditState = banditstate_idle;
-  MainLoop::currentMainLoop().cancelExecutionTicket(timeoutTicket);
+  timeoutTicket.cancel();
   rtsDtrOutput->off();
 }
 
@@ -123,7 +122,7 @@ void BanditComm::receiveHandler(ErrorPtr aError)
   if (Error::isOK(err)) {
     if (banditState==banditstate_receiving) {
       // accumulate
-      MainLoop::currentMainLoop().rescheduleExecutionTicket(timeoutTicket, RECEIVE_TIMEOUT);
+      timeoutTicket.reschedule(RECEIVE_TIMEOUT);
       LOG(LOG_DEBUG, "Received Data: %s", d.c_str());
       data.append(d);
     }

@@ -26,6 +26,7 @@
 #include "banditcomm.hpp"
 
 #include <dirent.h>
+#include <sys/stat.h> // for fstat
 
 using namespace p44;
 
@@ -36,6 +37,66 @@ using namespace p44;
 // MARK: ==== Application
 
 typedef boost::function<void (JsonObjectPtr aResponse, ErrorPtr aError)> RequestDoneCB;
+
+
+#define MAX_COPYFILE_BUF_SIZE 20000
+
+static ErrorPtr copyfile(const string aSourcePath, const string aDestPath)
+{
+  size_t bufSize = MAX_COPYFILE_BUF_SIZE;
+  int srcfd = open(aSourcePath.c_str(), O_RDONLY);
+  if (srcfd<0) {
+    return SysError::errNo(string_format("copyfile: cannot open input file '%s'", aSourcePath.c_str()).c_str());
+  }
+  // opened, check buffer needs
+  struct stat fs;
+  fstat(srcfd, &fs);
+  if (fs.st_size<bufSize) bufSize = fs.st_size; // don't need the entire buffer
+  // open destination file
+  int destfd = open(aDestPath.c_str(), O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
+  if (destfd<0) {
+    close(srcfd);
+    return SysError::errNo(string_format("copyfile: cannot open output file '%s'", aDestPath.c_str()).c_str());
+  }
+  // copy
+  char *buffer = new char[bufSize];
+  ssize_t n;
+  while((n = read(srcfd, buffer, bufSize))>0) {
+    n = write(destfd, buffer, n);
+    if (n<0) break;
+  }
+  close(destfd);
+  close(srcfd);
+  delete[] buffer;
+  if (n<0) {
+    return SysError::errNo("copyfile: error copying data");
+  }
+  return ErrorPtr();
+}
+
+
+static string cleanBanditData(const string aReceivedData)
+{
+  string res;
+  char lastChar = 0;
+  for (size_t i=0; i<aReceivedData.size(); ++i) {
+    char c = aReceivedData[i];
+    if (c=='\n' || c=='\r') {
+      // newline
+      if (lastChar=='\n') {
+        continue; // no duplicates
+      }
+      c = '\n';
+    }
+    else if (c<0x20 || c>0x7E) {
+      continue; // filter all control chars (DC1 0x11 at beginning, many nulls, DC4 0x13 at end)
+    }
+    res += c;
+    lastChar = c;
+  }
+  return res;
+}
+
 
 class P44BanditD : public CmdLineApp
 {
@@ -53,9 +114,10 @@ class P44BanditD : public CmdLineApp
   IndicatorOutputPtr redLed;
 
   MLMicroSeconds starttime;
+  MLTicket autoReceiveTicket;
+  
 
   // data dir
-  string datadir;
   string selectedfile;
 
 public:
@@ -82,7 +144,8 @@ public:
       { 0  , "button",         true,  "input pinspec; device button" },
       { 0  , "greenled",       true,  "output pinspec; green device LED" },
       { 0  , "redled",         true,  "output pinspec; red device LED" },
-      { 0  , "datadir",        true,  "filepath;where to save machine data files" },
+      CMDLINE_APPLICATION_STDOPTIONS,
+      CMDLINE_APPLICATION_PATHOPTIONS,
 
       // temp & experimental
       { 0  , "receive",        false, "receive data from bandit and show it on stdout" },
@@ -121,19 +184,11 @@ public:
       greenLed = IndicatorOutputPtr(new IndicatorOutput(getOption("greenled","missing")));
       redLed = IndicatorOutputPtr(new IndicatorOutput(getOption("redled","missing")));
 
-
-
       // - create and start bandit comm
       banditComm = BanditCommPtr(new BanditComm(MainLoop::currentMainLoop()));
       string serialport;
       if (getStringOption("serialport", serialport)) {
         banditComm->setConnectionSpecification(serialport.c_str(), 2101, getOption("hsoutpin", "missing"), getOption("hsinpin", "missing"));
-      }
-
-      // - find the data directory
-      datadir = "/tmp/data";
-      if (getStringOption("datadir", datadir)) {
-        pathstring_format_append(datadir, "");
       }
 
       // - create and start API server and wait for things to happen
@@ -150,50 +205,6 @@ public:
     // app now ready to run (or cleanup when already terminated)
     return run();
   }
-
-
-//  bool string_load(FILE *aFile, string &aData)
-//  {
-//    const size_t bufLen = 1024;
-//    char buf[bufLen];
-//    aData.clear();
-//    bool eof = false;
-//    while (!eof) {
-//      char *p = fgets(buf, bufLen-1, aFile);
-//      if (!p) {
-//        // eof or error
-//        if (feof(aFile)) return !aData.empty(); // eof is ok if it occurs after having collected some data, otherwise it means: no more lines
-//        return false;
-//      }
-//      // something read
-//      size_t l = strlen(buf);
-//      // check for CR, LF or CRLF
-//      if (l>0 && buf[l-1]=='\n') {
-//        l--;
-//        eol = true;
-//      }
-//      if (l>0 && buf[l-1]=='\r') {
-//        l--;
-//        eol = true;
-//      }
-//      // collect
-//      aLine.append(buf,l);
-//    }
-//    return true;
-//  }
-
-
-
-//  string data =
-//    "N001&G99\n"
-//    "Z18.Y111.X-217.G92\n"
-//    "G98\n"
-//    "G91\n"
-//    "F80.\n"
-//    "X-4.\n"
-//    "I4.\n"
-//    "/G5\n"
-//    "N8\n";
 
 
   virtual void initialize()
@@ -282,16 +293,18 @@ public:
       redLed->onFor(2*Second);
       if (aResponse.size()>0) {
         string ts = string_ftime("%Y-%m-%d_%H.%M.%S", NULL);
-        string fp = datadir;
-        pathstring_format_append(fp, "%s_bandit_transmit", ts.c_str());
+        string fp = Application::sharedApplication()->dataPath(string_format("%s_bandit_download.txt", ts.c_str()));
         LOG(LOG_NOTICE, "Saving received data (%zd bytes) to '%s'", receivedBytes, fp.c_str());
         FILE *datafileP = fopen(fp.c_str(), "w");
         if (datafileP==NULL) {
-
+          LOG(LOG_ERR, "Error opening file for write: %s", strerror(errno));
         }
         else {
+          // clean data
+          string data = cleanBanditData(aResponse);
+          size_t dataSize = data.size();
           // save data
-          if (fwrite(aResponse.c_str(), 1, receivedBytes, datafileP)<receivedBytes) {
+          if (fwrite(data.c_str(), 1, dataSize, datafileP)<dataSize) {
             LOG(LOG_ERR, "Cannot save received file %s - %s", fp.c_str(), strerror(errno));
           }
           // close file
@@ -303,7 +316,7 @@ public:
       LOG(LOG_ERR, "Error auto-receiving data: %s", aError->description().c_str());
     }
     // restart receiving (with a small safety delay)
-    MainLoop::currentMainLoop().executeOnce(boost::bind(&P44BanditD::autoReceive, this), 1*Second);
+    autoReceiveTicket.executeOnce(boost::bind(&P44BanditD::autoReceive, this), 1*Second);
   }
 
 
@@ -316,11 +329,14 @@ public:
       return SysError::errNo("cannot open file to send: ");
     }
     else {
+      // clean data
+      string senddata = cleanBanditData(data);
+      senddata += '\x13'; // always DC3 character at the end of file
       // send it
       redLed->steadyOn();
       banditComm->send(
         boost::bind(&P44BanditD::sendFileComplete, this, _1),
-        data,
+        senddata,
         true // hsonstart
       );
     }
@@ -351,8 +367,7 @@ public:
     LOG(LOG_INFO, "Button state now %d%s", aState, aHasChanged ? " (changed)" : " (same)");
     if (aHasChanged && !aState && selectedfile.size()>0) {
       // send the selected file
-      string filepath = datadir;
-      pathstring_format_append(filepath, "%s", selectedfile.c_str());
+      string filepath = Application::sharedApplication()->dataPath(selectedfile.c_str());
       ErrorPtr err = sendFile(filepath);
       if (!Error::isOK(err)) {
         LOG(LOG_ERR, "Cannot send file: %s", err->description().c_str());
@@ -443,6 +458,38 @@ public:
   }
 
 
+  ErrorPtr processUpload(string aUri, JsonObjectPtr aData, const string aUploadedFile)
+  {
+    ErrorPtr err;
+
+    string cmd;
+    JsonObjectPtr o;
+    if (aData->get("cmd", o)) {
+      cmd = o->stringValue();
+      if (cmd=="banditfileupload") {
+        // create destination file name
+        // - original name
+        string origname = aUploadedFile;
+        size_t p = aUploadedFile.rfind('/');
+        if (p!=string::npos) {
+          origname = aUploadedFile.substr(p+1);
+        }
+        string filepath = Application::sharedApplication()->dataPath(origname);
+        LOG(LOG_NOTICE, "Saving uploaded file '%s' as '%s'", aUploadedFile.c_str(), filepath.c_str());
+        err = copyfile(aUploadedFile, filepath);
+        if (Error::isOK(err)) {
+          // auto-select the file
+          selectedfile = origname;
+        }
+      }
+      else {
+        err = WebError::webErr(500, "Unknown upload cmd '%s'", cmd.c_str());
+      }
+    }
+    return err;
+  }
+
+
   bool processRequest(string aUri, JsonObjectPtr aData, bool aIsAction, RequestDoneCB aRequestDoneCB)
   {
     ErrorPtr err;
@@ -457,7 +504,7 @@ public:
         action = o->stringValue();
       }
       if (!aIsAction) {
-        DIR *dirP = opendir (datadir.c_str());
+        DIR *dirP = opendir(Application::sharedApplication()->dataPath().c_str());
         struct dirent *direntP;
         if (dirP==NULL) {
           err = SysError::errNo("Cannot read data directory: ");
@@ -491,8 +538,7 @@ public:
           // addressing a particular file
           // - try to open to see if it exists
           string filename = o->c_strValue();
-          string filepath = datadir;
-          pathstring_format_append(filepath, "%s", filename.c_str());
+          string filepath = Application::sharedApplication()->dataPath(filename.c_str());
           FILE *fileP = fopen(filepath.c_str(),"r");
           if (fileP==NULL) {
             err = WebError::webErr(404, "File '%s' not found", filename.c_str());
@@ -511,17 +557,13 @@ public:
                   err = WebError::webErr(415, "'newname' is too short (min 3 characters)");
                 }
                 else {
-                  string newpath = datadir;
-                  pathstring_format_append(newpath, "%s", newname.c_str());
+                  string newpath = Application::sharedApplication()->dataPath(newname.c_str());
                   if (rename(filepath.c_str(), newpath.c_str())!=0) {
                     err = SysError::errNo("Cannot rename file: ");
                   }
                 }
               }
             }
-//              else if (action=="download") {
-//
-//              }
             else if (action=="delete") {
               if (unlink(filepath.c_str())!=0) {
                 err = SysError::errNo("Cannot delete file: ");
@@ -556,62 +598,14 @@ public:
       actionStatus(aRequestDoneCB, err);
       return true;
     }
-
-//    else if (aUri=="player1" || aUri=="player2") {
-//      int side = aUri=="player2" ? 1 : 0;
-//      if (aIsAction) {
-//        if (aData->get("key", o)) {
-//          string key = o->stringValue();
-//          // Note: assume keys are already released when event is reported
-//          if (key=="left")
-//            keyHandler(side, keycode_left, keycode_none);
-//          else if (key=="right")
-//            keyHandler(side, keycode_right, keycode_none);
-//          else if (key=="turn")
-//            keyHandler(side, keycode_middleleft, keycode_none);
-//          else if (key=="drop")
-//            keyHandler(side, keycode_middleright, keycode_none);
-//        }
-//      }
-//      aRequestDoneCB(JsonObjectPtr(), ErrorPtr());
-//      return true;
-//    }
-//    else if (aUri=="board") {
-//      if (aIsAction) {
-//        PageMode mode = pagemode_controls1; // default to bottom controls
-//        if (aData->get("mode", o))
-//          mode = o->int32Value();
-//        if (aData->get("page", o)) {
-//          string page = o->stringValue();
-//          gotoPage(page, mode);
-//        }
-//      }
-//      aRequestDoneCB(JsonObjectPtr(), ErrorPtr());
-//      return true;
-//    }
-//    else if (aUri=="page") {
-//      // ask each page
-//      for (PagesMap::iterator pos = pages.begin(); pos!=pages.end(); ++pos) {
-//        if (pos->second->handleRequest(aData, aRequestDoneCB)) {
-//          // request will be handled by this page, done for now
-//          return true;
-//        }
-//      }
-//    }
     else if (aUri=="/") {
       string uploadedfile;
       string cmd;
-      if (aData->get("uploadedfile", o))
+      if (aData->get("uploadedfile", o)) {
         uploadedfile = o->stringValue();
-      if (aData->get("cmd", o))
-        cmd = o->stringValue();
-//      if (cmd=="imageupload" && displayPage) {
-//        ErrorPtr err = displayPage->loadPNGBackground(uploadedfile);
-//        gotoPage("display", false);
-//        updateDisplay();
-//        aRequestDoneCB(JsonObjectPtr(), err);
-//        return true;
-//      }
+        actionStatus(aRequestDoneCB, processUpload(aUri, aData, uploadedfile));
+        return true;
+      }
     }
     return false;
   }
@@ -627,30 +621,6 @@ public:
   {
     aRequestDoneCB(JsonObjectPtr(), aError);
   }
-  
-
-
-  ErrorPtr processUpload(string aUri, JsonObjectPtr aData, const string aUploadedFile)
-  {
-    ErrorPtr err;
-
-    string cmd;
-    JsonObjectPtr o;
-    if (aData->get("cmd", o)) {
-      cmd = o->stringValue();
-//      if (cmd=="imageupload") {
-//        displayPage->loadPNGBackground(aUploadedFile);
-//        gotoPage("display", false);
-//        updateDisplay();
-//      }
-//      else
-      {
-        err = WebError::webErr(500, "Unknown upload cmd '%s'", cmd.c_str());
-      }
-    }
-    return err;
-  }
-
 
 
 };

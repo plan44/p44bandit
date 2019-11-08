@@ -56,7 +56,7 @@ namespace p44 {
 
     string data;
     bool endOnHandshake;
-    long timeoutTicket;
+    MLTicket timeoutTicket;
 
   public:
 

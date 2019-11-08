@@ -27,8 +27,6 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <Testables>
-      </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
@@ -38,8 +36,8 @@
             ReferencedContainer = "container:p44banditd.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      <Testables>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -75,7 +73,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--datadir &quot;/Users/luz/Documents/plan44/Projekte/CNC-Fra&#x308;se mit Bandit Steuerung - mafi a-faire/test-datadir&quot;"
+            argument = "--datapath &quot;/Users/luz/Documents/plan44/Projekte/CNC-Fra&#x308;se mit Bandit Steuerung - mafi a-faire/test-datadir&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -111,8 +109,6 @@
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

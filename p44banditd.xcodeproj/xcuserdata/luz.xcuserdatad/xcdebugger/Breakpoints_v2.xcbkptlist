@@ -1,30 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Bucket
+   uuid = "5D178658-24A3-4A82-9C5F-561751F90E09"
    type = "1"
    version = "2.0">
    <Breakpoints>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            uuid = "5C334627-14BE-4920-B5E2-BCC7EA9E36A8"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
-            continueAfterRunningActions = "Yes"
+            continueAfterRunningActions = "No"
             filePath = "src/p44banditd_main.cpp"
-            timestampString = "524760075.982627"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "663"
-            endingLineNumber = "663"
-            landmarkName = "main(int argc, char **argv)"
-            landmarkType = "9">
-            <Actions>
-               <BreakpointActionProxy
-                  ActionExtensionID = "Xcode.BreakpointAction.DebuggerCommand">
-                  <ActionContent
-                     consoleCommand = "process handle SIGTERM SIGUSR1 -n true -p true -s false">
-                  </ActionContent>
-               </BreakpointActionProxy>
-            </Actions>
+            startingLineNumber = "513"
+            endingLineNumber = "513"
+            landmarkName = "processRequest(aUri, aData, aIsAction, aRequestDoneCB)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "57AF24CF-BBBB-433F-BFEE-5F4CFE5BA439"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "src/p44banditd_main.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "483"
+            endingLineNumber = "483"
+            landmarkName = "processUpload(aUri, aData, aUploadedFile)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "254853D9-E9A4-42DC-95C0-DA94AF5E0464"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "src/p44banditd_main.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "558"
+            endingLineNumber = "558"
+            landmarkName = "processRequest(aUri, aData, aIsAction, aRequestDoneCB)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

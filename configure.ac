@@ -1,4 +1,4 @@
-AC_INIT([p44banditd], [0.1], [luz@plan44.ch], [p44banditd], [http://www.plan44.ch/])
+AC_INIT([p44banditd], [0.5], [luz@plan44.ch], [p44banditd], [http://www.plan44.ch/])
 AC_PREREQ([2.59])
 
 AC_CONFIG_AUX_DIR(configure_aux)
@@ -11,40 +11,28 @@ AC_PROG_CXX
 
 AC_CONFIG_FILES([Makefile])
 
-# options
-AC_ARG_ENABLE([debug],
-[  --enable-debug    Turn on debugging],
-[case "${enableval}" in
-  yes) debug=true ;;
-  no)  debug=false ;;
-  *) AC_MSG_ERROR([bad value ${enableval} for --enable-debug]) ;;
-esac],[debug=false])
-AM_CONDITIONAL([DEBUG], [test x$debug = xtrue])
 
+##### OPTIONS
 
-P44_BUILD_OW="no"
-AC_ARG_ENABLE([p44buildow],
-    [AC_HELP_STRING([--enable-p44buildow],
-                    [plan44 build for OpenWRT (default: no)]) ],
-    [
-        if test "x$enableval" = "xno"; then
-            P44_BUILD_OW="no"
-        elif test "x$enableval" = "xyes"; then
-            P44_BUILD_OW="yes"
-        fi
-    ]
+AC_ARG_ENABLE(
+  [debug],
+  [AC_HELP_STRING([--enable-debug], [Debug build with extra debugging code])]
 )
-if (test "x$P44_BUILD_OW" = "xyes"); then
-    AC_DEFINE([P44_BUILD_OW], [1], [plan44 OpenWRT build])
-fi
-AM_CONDITIONAL([P44_BUILD_OW], [test "x$P44_BUILD_OW" = "xyes"])
+AM_CONDITIONAL([DEBUG], [test "x$enable_debug" = xyes])
+
+AC_ARG_ENABLE(
+  [p44buildow],
+  [AC_HELP_STRING([--enable-p44buildow], [plan44 build for openwrt targets])]
+)
+AM_CONDITIONAL([P44_BUILD_OW], [test "x$enable_p44buildow" = xyes])
 
 
 AC_CHECK_LIB(m, atan2, [], [AC_MSG_ERROR([Could not find math lib (m)])])
 AC_CHECK_LIB(rt, clock_gettime, [], [AC_MSG_ERROR([Could not find rt lib for clock_gettime])])
 AC_CHECK_LIB(dl, dlopen, [], [AC_MSG_ERROR([Could not find libdl])])
 AC_CHECK_LIB(json-c, json_tokener_get_error, [], [AC_MSG_ERROR([Could not find JSON-C / libjson0 with json_tokener_get_error supported (>=0.10)])])
-AC_CHECK_LIB(png, png_image_begin_read_from_file, [], [AC_MSG_ERROR([Could not find libpng with png_image_begin_read_from_file supported (>=1.6)])])
+AC_CHECK_LIB(ssl, TLSv1_client_method, [], [AC_MSG_ERROR([Could not find libssl with TLSv1_client_method])])
+AC_CHECK_LIB(crypto, SHA1_Init, [], [AC_MSG_ERROR([Could not find libcrypto with SHA1_Init])])
 
 
 PKG_PROG_PKG_CONFIG
