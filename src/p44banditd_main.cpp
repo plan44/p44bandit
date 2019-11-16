@@ -75,18 +75,26 @@ static ErrorPtr copyfile(const string aSourcePath, const string aDestPath)
 }
 
 
-static string cleanBanditData(const string aReceivedData)
+static string cleanBanditData(const string aData, bool aForSend, bool aRawMode)
 {
+  if (aRawMode) return aData; // pass trough
   string res;
   char lastChar = 0;
-  for (size_t i=0; i<aReceivedData.size(); ++i) {
-    char c = aReceivedData[i];
+  // skip all trailing control chars and spaces first
+  size_t i=0;
+  while (i<aData.size()) {
+    if (aData[i]>0x20) break;
+    i++;
+  }
+  for (;i<aData.size(); ++i) {
+    char c = aData[i];
     if (c=='\n' || c=='\r') {
       // newline
       if (lastChar=='\n') {
         continue; // no duplicates
       }
       c = '\n';
+      if (aForSend) res += '\r'; // output with CR+LF
     }
     else if (c<0x20 || c>0x7E) {
       continue; // filter all control chars (DC1 0x11 at beginning, many nulls, DC4 0x13 at end)
@@ -107,6 +115,7 @@ class P44BanditD : public CmdLineApp
 
   // BANDIT communication
   BanditCommPtr banditComm;
+  bool rawmode;
 
   // LED+Button
   ButtonInputPtr button;
@@ -123,7 +132,8 @@ class P44BanditD : public CmdLineApp
 public:
 
   P44BanditD() :
-    starttime(MainLoop::now())
+    starttime(MainLoop::now()),
+    rawmode(false)
   {
   }
 
@@ -152,6 +162,7 @@ public:
       { 0  , "startonhs",      false, "start only on input handshake becoming active" },
       { 0  , "stoponhs",       false, "stop only on input handshake becoming inactive" },
       { 0  , "hsonstart",      false, "set handshake line active already before sending or receiving" },
+      { 0  , "rawmode",        false, "send/receive raw data to/from Bandit" },
       { 0  , "send",           true,  "file; send file to bandit" },
       { 'h', "help",           false, "show this text" },
       { 0, NULL } // list terminator
@@ -211,6 +222,7 @@ public:
   {
     banditComm->init(); // idle
     string fn;
+    rawmode = getOption("rawmode");
     if (getOption("receive")) {
       banditComm->receive(
         boost::bind(&P44BanditD::receiveResult, this, _1, _2),
@@ -301,7 +313,7 @@ public:
         }
         else {
           // clean data
-          string data = cleanBanditData(aResponse);
+          string data = cleanBanditData(aResponse, false, rawmode);
           size_t dataSize = data.size();
           // save data
           if (fwrite(data.c_str(), 1, dataSize, datafileP)<dataSize) {
@@ -330,8 +342,17 @@ public:
     }
     else {
       // clean data
-      string senddata = cleanBanditData(data);
-      senddata += '\x13'; // always DC3 character at the end of file
+      string senddata = "\x11"; // always DC1/XON at beginning
+      senddata.append(100, 0); // 100 null chars padding
+      senddata += "\r"; // single CR in front of first line
+      senddata += cleanBanditData(data, true, rawmode); // data itself, with double LFs
+      // make sure data ends with CR LF
+      if (senddata[senddata.size()-1]!='\n') {
+        senddata += "\r\n";
+      }
+      senddata += "\x13"; // always DC3/XOFF character at the end of file
+      senddata.append(100, 0); // 100 null chars padding
+      LOG(LOG_NOTICE, "Sending data (%lu bytes input data, %lu bytes padded+cleaned) from '%s'", data.size(), senddata.size(), aFilePath.c_str());
       // send it
       redLed->steadyOn();
       banditComm->send(
