@@ -14,8 +14,8 @@
             filePath = "src/p44banditd_main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "513"
-            endingLineNumber = "513"
+            startingLineNumber = "531"
+            endingLineNumber = "531"
             landmarkName = "processRequest(aUri, aData, aIsAction, aRequestDoneCB)"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,8 +30,8 @@
             filePath = "src/p44banditd_main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "483"
-            endingLineNumber = "483"
+            startingLineNumber = "501"
+            endingLineNumber = "501"
             landmarkName = "processUpload(aUri, aData, aUploadedFile)"
             landmarkType = "7">
          </BreakpointContent>
@@ -46,8 +46,8 @@
             filePath = "src/p44banditd_main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "558"
-            endingLineNumber = "558"
+            startingLineNumber = "576"
+            endingLineNumber = "576"
             landmarkName = "processRequest(aUri, aData, aIsAction, aRequestDoneCB)"
             landmarkType = "7">
          </BreakpointContent>
