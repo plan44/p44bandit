@@ -66,10 +66,10 @@ function GCodeBandit(cadDocumentInterface, camDocumentInterface) {
     // circular moves:
     this.splitArcsAtQuadrantLines = true; // BANDIT cannot do arcs over quadrant borders
     // - clockwise and counterclockwise are the same (not ambiguous within a quadrant)
-    this.firstArcCWMove =            "[N] [X][Y][I][J]";
-    this.arcCWMove =                 "[N] [X][Y][I][J]";
-    this.firstArcCCWMove =           "[N] [X][Y][I][J]";
-    this.arcCCWMove =                "[N] [X][Y][I][J]";
+    this.firstArcCWMove =            "[N] [X][Y][IA][JA]";
+    this.arcCWMove =                 this.firstArcCWMove;
+    this.firstArcCCWMove =           this.firstArcCWMove;
+    this.arcCCWMove =                this.firstArcCWMove;
 
 
 }
