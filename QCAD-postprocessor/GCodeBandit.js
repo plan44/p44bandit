@@ -5,6 +5,24 @@
 // Include definition of class GCodeBase:
 include("GCodeBase.js");
 
+
+// If set, output will be UNUSABLE by machine, but show debugging info (what primitives are being used)
+const zdbg_enable = false;
+
+function zdbg(cmd, name)
+{
+  if (!zdbg_enable) return cmd;
+  var z_dbg = "safety=[ZS] clearance=[ZU] clearancePass=[ZUP] start=[Z_START] end=[Z_END] depth=[ZD] zzero=[Z_ZERO]";
+  return cmd + " ## " + name + ": " + z_dbg;
+}
+
+function zdbg_arr(name)
+{
+  if (!zdbg_enable) return [];
+  return [ zdbg("##", name) ];
+}
+
+
 // Constructor:
 function GCodeBandit(cadDocumentInterface, camDocumentInterface) {
     GCodeBase.call(this, cadDocumentInterface, camDocumentInterface);
@@ -19,33 +37,61 @@ function GCodeBandit(cadDocumentInterface, camDocumentInterface) {
     this.outputOffsetPath = true; // No G41/G42!
 
     this.banditZZero = 0; // Z machine home position
+    this.banditFastDrill = false; // fast Z moves for drilling
 
     // header / footer before / after output:
     this.header = [
-        "[N]&G99", // BANDIT: drive to machine zero
+        zdbg("[N]&G99", "header"), // BANDIT: drive to machine zero
         "[N] [Z_ZERO][Y1][X1]G92", // set position register (set workpiece zero)
         "[N] G90" // absolute programming (G91 would be relative)
     ];
     this.footer = [
-        "[N] M2" // legacy end-of-program (instead of M30)
+        zdbg("[N] M2", "footer") // legacy end-of-program (instead of M30)
     ];
 
     // header / footer before / after tool change:
     this.toolHeader = [
-        "[N] M6", // Pause (Tool change)
+        zdbg("[N] M6", "toolHeader"), // Pause (Tool change)
         "[N] [F]" // feed rate
     ];
-    this.toolFooter = [];
+
+
+    this.toolFooter = zdbg_arr("toolFooter");
+
+    // header / footer before / after each toolpath (can be multiple contours):
+    this.toolpathHeader = zdbg_arr("toolpathHeader");
+    this.toolpathFooter = zdbg_arr("toolpathFooter");
+
+    // header / footer before / after each contour in a toolpath:
+    this.contourHeader = zdbg_arr("contourHeader");
+    this.contourFooter = zdbg_arr("contourFooter");
+
+    // header / footer before / after single Z pass:
+    this.singleZPassHeader = zdbg_arr("singleZPassHeader");
+    this.singleZPassFooter = zdbg_arr("singleZPassFooter");
+
+    // header / footer before / after mutliple Z passes:
+    this.multiZPassHeader = zdbg_arr("multiZPassHeader");
+    this.multiZPassFooter = zdbg_arr("multiZPassFooter");
+
+    // header / footer before / after first pass of mutliple Z passes:
+    this.zPassFirstHeader = zdbg_arr("zPassFirstHeader");
+    this.zPassFirstFooter = zdbg_arr("zPassFirstFooter");
+
+    // header / footer before / after each pass of mutliple Z passes:
+    this.zPassHeader = zdbg_arr("zPassHeader");
+    this.zPassFooter = zdbg_arr("zPassFooter");
+
+    // footer after last pass of mutliple Z passes:
+    this.zPassLastFooter = zdbg_arr("zPassLastFooter");
+
 
 
     // rapid moves:
-    // - need representation of X/Y/Z as I/J/K for rapid moves (Bandit does not have G0/G1)
+    // - use I/J/K  prefixes for rapid moves (Bandit does not have G0/G1)
     //                    name,        ID,        always, prefix, decimals,  options
-    this.registerVariable("xPosition", "X_RAPID", false,  "I",    "DEFAULT", "DEFAULT");
-    this.registerVariable("yPosition", "Y_RAPID", false,  "J",    "DEFAULT", "DEFAULT");
-    this.registerVariable("zPosition", "Z_RAPID", false,  "K",    "DEFAULT", "DEFAULT");
-    this.rapidMove =                 "[N] [X_RAPID][Y_RAPID]";
-    this.rapidMoveZ =                "[N] [Z]"; // no rapid Z moves for now
+    this.rapidMove =                 "[N] I[X#]J[Y#]";
+    this.rapidMoveZ =                "[N] K[Z#]"; // try rapid Z moves now
 
     // linear moves:
     // - Bandit does not have G1, all X/Y/Z moves are non-rapid linear moves
@@ -58,12 +104,13 @@ function GCodeBandit(cadDocumentInterface, camDocumentInterface) {
     this.linearLeadOut =             undefined;
 
     // linear Z moves:
-    this.firstLinearMoveZ =          "[N] [Z]";
-    this.linearMoveZ =               "[N] [Z]";
+    this.firstLinearMoveZ =          zdbg("[N] [Z]", "firstLinearMoveZ");
+    this.linearMoveZ =               zdbg("[N] [Z]", "linearMoveZ");
 
     // point moves for drilling:
-    this.firstPointMoveZ =           this.firstLinearMoveZ;
-    this.pointMoveZ =                this.linearMoveZ;
+    // Note: default only, will be overridden in writeFile()
+    this.firstPointMoveZ =         zdbg("[N] [Z]", "firstPointMoveZ-normal");
+    this.pointMoveZ =              zdbg("[N] [Z]", "pointMoveZ-normal");
 
     // circular moves:
     this.splitArcsAtQuadrantLines = true; // BANDIT cannot do arcs over quadrant borders
@@ -79,6 +126,12 @@ GCodeBandit.prototype = new GCodeBase();
 
 // Display name shown in user interface:
 GCodeBandit.displayName = "G-Code (BANDIT) [mm]";
+
+
+GCodeBandit.prototype.postInit = function(dialog) {
+    // Note: this happens before global options for export are known
+    return GCodeBase.prototype.postInit.call(this, dialog);
+}
 
 
 /**
@@ -103,11 +156,23 @@ GCodeBandit.prototype.writeLine = function(line) {
  */
 GCodeBandit.prototype.writeFile = function(fileName) {
     // get configured values:
-    var banditZZero = this.getGlobalOption("BanditZZero", "100");
-    this.banditZZero = Number(banditZZero);
-
+    // - zero offset
+    this.banditZZero = this.getGlobalOptionFloat("BanditZZero", 100);
     this.registerVariable("banditZZero", "Z_ZERO", false, "Z", "DEFAULT", "DEFAULT");
-
+    // - fast drilling option
+    this.banditFastDrill = this.getGlobalOptionBool("BanditFastDrill", "0") === true;
+    // sped up point moves for drilling:
+    if (this.banditFastDrill) {
+      // fast move top surface, slow drill, fast retract
+      this.firstPointMoveZ =         [ zdbg("[N] K0.000", "firstPointMoveZ-fastDrilling"), "[N] [Z]" ]; // fast move down to zero, then slow move
+      this.pointMoveZ =              zdbg("[N] K[Z#]", "pointMoveZ-fastDrilling");
+    }
+    else {
+      // standard (slow) Z moves for drilling
+      this.firstPointMoveZ =         zdbg("[N] [Z]", "firstPointMoveZ-normal");
+      this.pointMoveZ =              zdbg("[N] [Z]", "pointMoveZ-normal");
+    }
+    this.pointMoveZOri = this.pointMoveZ; // Important: update original setting as well
     // call base implemenation of writeFile:
     return GCodeBase.prototype.writeFile.call(this, fileName);
 };
@@ -124,15 +189,22 @@ GCodeBandit.prototype.initConfigDialog = function(dialog) {
     // get QVBoxLayout:
     var vBoxLayout = group.layout();
 
+    // Bandit zero
     var hBoxLayout = new QHBoxLayout(null);
     vBoxLayout.addLayout(hBoxLayout, 0);
-
+    // - Label
     var lZZero = new QLabel(qsTr("Z Nullpunkt:"));
     hBoxLayout.addWidget(lZZero, 0,0);
-
+    // - Editor
     var leZZero = new QLineEdit();
     leZZero.editable = true;
     leZZero.objectName = "BanditZZero";
     hBoxLayout.addWidget(leZZero, 0,0);
+
+    // Bandit fast drilling
+    var cbFastDrill = new QCheckBox("Schnelle Z-Anfahrt und Rückzug beim Bohren");
+    cbFastDrill.checked = false;
+    cbFastDrill.objectName = "BanditFastDrill";
+    vBoxLayout.addWidget(cbFastDrill, 0,0);
 };
 
