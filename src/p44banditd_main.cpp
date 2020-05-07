@@ -254,6 +254,7 @@ public:
       string data;
       FILE *inFile = fopen(fn.c_str(), "r");
       if (inFile && string_fgetfile(inFile, data)) {
+        string sendData = cleanBanditData(data, true, rawmode);
         banditComm->send(
           boost::bind(&P44BanditD::sendComplete, this, _1),
           data,
@@ -291,8 +292,9 @@ public:
   {
     if (Error::isOK(aError)) {
       // print data to stdout
-      LOG(LOG_NOTICE, "Successfully received %zd bytes of data", aResponse.size());
-      fputs(aResponse.c_str(), stdout);
+      LOG(LOG_NOTICE, "Successfully received %zd bytes of raw data", aResponse.size());
+      string rcvData = cleanBanditData(aResponse, false, rawmode);
+      fputs(rcvData.c_str(), stdout);
       fflush(stdout);
     }
     else {

@@ -14,9 +14,9 @@
             filePath = "src/p44banditd_main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "531"
-            endingLineNumber = "531"
-            landmarkName = "processRequest(aUri, aData, aIsAction, aRequestDoneCB)"
+            startingLineNumber = "532"
+            endingLineNumber = "532"
+            landmarkName = "processUpload(aUri, aData, aUploadedFile)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -30,10 +30,10 @@
             filePath = "src/p44banditd_main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "501"
-            endingLineNumber = "501"
-            landmarkName = "processUpload(aUri, aData, aUploadedFile)"
-            landmarkType = "7">
+            startingLineNumber = "502"
+            endingLineNumber = "502"
+            landmarkName = "P44BanditD"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -46,9 +46,25 @@
             filePath = "src/p44banditd_main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "576"
-            endingLineNumber = "576"
+            startingLineNumber = "577"
+            endingLineNumber = "577"
             landmarkName = "processRequest(aUri, aData, aIsAction, aRequestDoneCB)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6008E5C2-6416-4669-BBA5-D60957E89AB4"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "src/banditcomm.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "190"
+            endingLineNumber = "190"
+            landmarkName = "BanditComm::send(aStatusCB, aData, aEnableHandshake)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

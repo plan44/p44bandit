@@ -70,7 +70,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--serialport /dev/cu.usbserial-A505JPU2 --hsoutpin simpin.out --hsinpin simpin.in"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--datapath &quot;/Users/luz/Documents/plan44/Projekte/CNC-Fra&#x308;se mit Bandit Steuerung - mafi a-faire/test-datadir&quot;"
@@ -94,7 +94,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--send /tmp/test.txt"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--hsonstart"
