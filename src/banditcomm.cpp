@@ -79,7 +79,7 @@ void BanditComm::stop()
   responseCB = NULL;
   banditState = banditstate_idle;
   timeoutTicket.cancel();
-  rtsDtrOutput->off();
+  if (rtsDtrOutput) rtsDtrOutput->off();
 }
 
 
@@ -187,8 +187,9 @@ void BanditComm::receive(BanditResponseCB aResponseCB, bool aHandShakeOnStart, b
 void BanditComm::send(StatusCB aStatusCB, string aData, bool aEnableHandshake)
 {
   // FIXME: send line per line, maybe check handshake line, callback only when finished
-  if (aEnableHandshake)
-    rtsDtrOutput->on();
+  if (aEnableHandshake) {
+    if (rtsDtrOutput) rtsDtrOutput->on();
+  }
   MainLoop::currentMainLoop().executeTicketOnce(timeoutTicket, boost::bind(&BanditComm::dataSent, this, aStatusCB), BYTE_TIME*aData.size()+SEND_FINISH_DELAY);
   sendString(aData);
 }
@@ -196,7 +197,7 @@ void BanditComm::send(StatusCB aStatusCB, string aData, bool aEnableHandshake)
 
 void BanditComm::dataSent(StatusCB aStatusCB)
 {
-  rtsDtrOutput->off();
+  if (rtsDtrOutput) rtsDtrOutput->off();
   if (aStatusCB) aStatusCB(ErrorPtr());
 }
 
