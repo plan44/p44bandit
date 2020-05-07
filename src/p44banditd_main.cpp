@@ -86,6 +86,8 @@ static string cleanBanditData(const string aData, bool aForSend, bool aRawMode)
     if (aData[i]>0x20) break;
     i++;
   }
+  bool bol = true;
+  int lineNo = 0;
   for (;i<aData.size(); ++i) {
     char c = aData[i];
     if (c=='\n' || c=='\r') {
@@ -95,9 +97,26 @@ static string cleanBanditData(const string aData, bool aForSend, bool aRawMode)
       }
       c = '\n';
       if (aForSend) res += '\r'; // output with CR+LF
+      bol = true;
     }
     else if (c<0x20 || c>0x7E) {
       continue; // filter all control chars (DC1 0x11 at beginning, many nulls, DC4 0x13 at end)
+    }
+    else if (bol) {
+      bol = false;
+      lineNo++;
+      if (aForSend) {
+        if (c=='N' || isdigit(c)) {
+          // skip existing line number (starting with N or not)
+          if (c=='N') i++;
+          while (i<aData.size() && isdigit(aData[i])) i++;
+          // skip spaces and ampersand
+          while (i<aData.size() && (isblank(aData[i]) || (aData[i]=='&'))) i++;
+          c = aData[i];
+        }
+        // (re-)generate line number
+        string_format_append(res, "N%d%c", lineNo, lineNo==1 ? '&' : ' ');
+      }
     }
     res += c;
     lastChar = c;
