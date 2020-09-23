@@ -90,6 +90,14 @@ static string cleanBanditData(const string aData, bool aForSend, bool aRawMode)
   int lineNo = 0;
   for (;i<aData.size(); ++i) {
     char c = aData[i];
+    // filter comment lines
+    if (bol && c=='#') {
+      i++; // skip #
+      while (i<aData.size() && aData[i]!='\n' && aData[i]!='\r') i++; // skip comment text
+      while (i<aData.size() && (aData[i]=='\n' || aData[i]=='\r')) i++; // skip line end
+      i--; // will increment after continue
+      continue; // still BOL
+    }
     if (c=='\n' || c=='\r') {
       // newline
       if (lastChar=='\n') {
@@ -118,7 +126,7 @@ static string cleanBanditData(const string aData, bool aForSend, bool aRawMode)
         string_format_append(res, "N%d%c", lineNo, lineNo==1 ? '&' : ' ');
       }
     }
-    res += c;
+    res += toupper(c);
     lastChar = c;
   }
   return res;
@@ -257,7 +265,7 @@ public:
         string sendData = cleanBanditData(data, true, rawmode);
         banditComm->send(
           boost::bind(&P44BanditD::sendComplete, this, _1),
-          data,
+          sendData,
           getOption("hsonstart")
         );
       }

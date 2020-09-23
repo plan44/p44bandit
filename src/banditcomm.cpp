@@ -187,6 +187,7 @@ void BanditComm::receive(BanditResponseCB aResponseCB, bool aHandShakeOnStart, b
 void BanditComm::send(StatusCB aStatusCB, string aData, bool aEnableHandshake)
 {
   // FIXME: send line per line, maybe check handshake line, callback only when finished
+  //printf("BEGIN:\n%sEND\n", aData.c_str());
   if (aEnableHandshake) {
     if (rtsDtrOutput) rtsDtrOutput->on();
   }
